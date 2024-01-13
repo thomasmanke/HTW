@@ -1,0 +1,17 @@
+---
+title: "Notebooks"
+listing:
+  - id: ml2024
+    contents: 
+      - "*.qmd"
+      - "*.ipynb"
+    type: grid
+    sort: "name asc"
+    categories: true
+    sort-ui: true
+    filter-ui: true
+#page-layout: full
+title-block-banner: false
+toc: true
+
+---

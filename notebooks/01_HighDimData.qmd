@@ -1,0 +1,180 @@
+---
+title: "01: Dimensional Reduction"
+author: "Thomas Manke"
+date:  "2024-01-05"
+categories:
+  - PCA
+  - tSNE
+description: "**Ziel**: Reduktion von Variablen und Datenvisualisierung"
+#toc: true
+---
+
+```{r}
+#| child: "_setup.qmd"
+```
+
+
+## Daten
+
+Ein einfacher (und berühmter) Datensatz ist von 150 Blumen mit jeweils 4 Längenmessungen
+
+![Iris Blume mit 4 Messungen. 
+Quelle: blog of mathieu.guillame-bert.com](images/sepal_petal.jpeg){fig-align="left"}
+
+
+## Datenmatrix X
+
+```{r}
+#| label: "pheatmap"
+#| echo: false
+#| fig-cap: "150 Samples (Blumen) mit je 4 Messungen [cm]. Quelle: Anderson (1935)"
+library(pheatmap)
+
+X = iris[,-5]
+s = iris[,5]
+ann = data.frame(Species = s)  
+rownames(X)=rownames(iris)
+rownames(ann)=rownames(iris)
+
+pheatmap(X, 
+#         annotation_row = ann,
+         cluster_rows=FALSE,
+         cluster_cols=FALSE,
+         show_rownames = FALSE,
+         labels_col = ""
+#         legend_labels = c("Laenge [cm]")
+         )
+```
+
+## Quiz
+
+Sind die Variablen "unabhängig" ?
+
+```{r}
+#| label: "corr"
+#| echo: false
+#| fig-cap: "Korrelations und Antikorrelationen zwischen Variablen"
+
+pheatmap(cor(X))
+```
+
+## Ziel: Datenreduktion
+
+Finde vereinfachte Beschreibung der Datenmatrix $M$
+
+Example: 2D $\to$ 1D:
+
+![PCA goal: from amoeba \@ https://stats.stackexchange.com/questions/2691](images/PCA.gif){fig-align="left"}
+
+Finde Richtungen **maximaler variance** (minimalen Rekonstruktionsfehler)
+
+## Prinicipal Component Analysis (1930)
+
+**Mathematisch**:
+
+![PCA mit Linear Algebra. Finde geeignete Rotationsmatrix R.](images/PCA.jpg)
+
+**Programmatisch**:
+
+-   Wichtiger Bestandteil vieler Programmingsprachen und packages (hier R).
+-   Einfach und schnell
+
+```{r}
+#| label: "run_pca"
+pca = prcomp(X, scale=TRUE)
+S = pca$x # score matrix (transformierte Matrix)
+```
+
+## Neue Variablen
+
+```{r}
+#| label: "pca_cov"
+#| echo: false
+#| fig-cap: "Transformierte Datenmatrix: *Score Matrix*"
+pheatmap(S, 
+         cluster_rows=FALSE,
+         cluster_cols=FALSE,
+         show_rownames = FALSE,
+         )
+
+#pheatmap(cov(S)) 
+```
+
+-   Neuen Variablen PC1-4, (*principle components*) sind sortiert.
+-   Wenig Variation in den hoeheren Komponenten --\> benutze nur die ersten paar
+
+## Wieviele Componenten reichen?
+
+```{r}
+#| label: "plot_scree"
+#| echo: false
+plot(pca, type="lines")
+```
+
+```{r}
+#| label: "plot_PC1_PC2"
+#| fig-cap: "PCA: Eine 'optimale' Projektion der Daten in 2D"
+plot(S[,1:2],pch=21)
+```
+
+## Quiz
+![Mehr als 300 Iris Arten.  Bildquelle: Xiao et al. PhytoKeys 2021](images/iris_phylo.jpeg)
+
+Basierend auf der PCA Analyse: Wieviele Arten sind in dem Datensatz vertreten: 1,2,3,?
+
+## Summary
+
+-   Lineare Transformation: Datenmatrix $X$ $\to$ score matrix $S$
+-   Datenreduktion: wichtig fuer Visualisierung und weitere Analysis
+-   Labels waren unwichtig: "unsupervised machine learning"
+
+```{r}
+#| label: "plot_PC1_PC2_species"
+#| echo: false
+#| fig-cap: "PCA plot mit Iris species farbcodiert"
+#| fig-align: "left"
+plot(S[,1:2],pch=21, bg=s)
+```
+
+
+## Anderen Ideen zur Dimensionsreduzierung
+
+### t-SNE: t-distributed stochastic neighbor embedding (2008)
+
+Idee: mappe Entfernungen zwischen samples $i$ und $j$ auf Wahrscheinlichkeiten 
+
+-   im Originalraum (hochdimensional): $d_{ij} \to p_{ij}$,
+-   im Zielraum (2D): $\delta_{ij} \to q_{ij}$
+
+Samples werden im Zielraum solange bewegt (iterative) bis $q_{ij} \approx p_{ij}$.
+
+Das t- in t-SNE steht fuer eine spezifische map $\delta_{ij} \to q_{ij}$ 
+die sich fuer viele Anwendungen als nuetzlich herausgestellt hat.
+
+Weitere Details finden sich hier:
+
+-   [Google TechTalk](https://www.youtube.com/watch?v=RJVL80Gg3lA&list=UUtXKDgv1AVoG88PLl8nGXmw) (Duration 55 min.)
+-   [StatQuest!](https://www.youtube.com/watch?v=NEaUSP4YerM) video (Duration 10 min.)
+-   [original paper](https://jmlr.csail.mit.edu/papers/volume9/vandermaaten08a/vandermaaten08a.pdf) from 2008.
+
+Die praktische Ausfuehrung ist einfach - dank vieler bestehender software packages
+
+
+```{r}
+#| label: "tSNE"
+#| fig-cap: "tSNE"
+#| fig-align: "left"
+
+library(Rtsne)
+iris_unique <- unique(iris) # Remove duplicates
+set.seed(42) 
+tsne_out <- Rtsne(as.matrix(iris_unique[,1:4])) 
+plot(tsne_out$Y, pch=21, bg=iris_unique$Species,asp=1) 
+```
+
+
+- nicht-lineare Transformation
+- Achtung: nicht deterministisch, perplexity parameter: explore!
+- viele andere Erweiterungen, viele Kriterien
+- was ist die "beste" Visualisierung ? $\to$ vgl. Kartographie
+- oft benutzt in genomics und single-cell analysis

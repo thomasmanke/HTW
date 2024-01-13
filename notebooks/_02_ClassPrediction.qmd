@@ -1,0 +1,166 @@
+---
+title: "02: Class Prediction"
+author: "Thomas Manke"
+date:  "2024-01-05"
+categories:
+  - kNN
+  - Artificial Neural Networks
+description: "**Ziel:** Daten mit labels"
+---
+
+```{r}
+#| child: "_setup.qmd"
+```
+
+
+
+```{r}
+#| label: "load_libraries"
+#| warning: false
+#| echo: false
+library(tidyverse)
+library(caret)
+library(pheatmap)
+```
+
+```{r}
+#| label: "helper_functions"
+#| echo: false
+plot_cM <- function(cM, fs=14) {
+  title=paste0("Accuracy: ", round(cM$overall['Accuracy'],3))
+  pheatmap(
+    cM$table, 
+    main=title,
+    fontsize = fs,
+    display_numbers=TRUE, number_format = "%.0f", number_color="black"
+    )
+}
+```
+
+## Gelabelte Daten
+```{r}
+#| label: "labeled_problem"
+#| echo: false
+X = iris[,-5]
+y = iris[,5]
+ann = data.frame(Species = y)  
+rownames(X)=rownames(iris)
+rownames(ann)=rownames(iris)
+
+pheatmap(X, 
+         annotation_row = ann,
+         cluster_rows=FALSE,
+         cluster_cols=FALSE,
+         show_rownames = FALSE,
+         )
+```
+
+
+## **Supervised Machine Learning:**
+
+- Input: Labeled Daten $(X,y)$
+- Output: Model $X \to y$
+
+
+Hier ist eine mögliche Klassifizierung für den Iris Datensatz unter Benutzung nur einer Variableb (schlechte Handarbeit)
+```{r}
+#| label: "thresholds"
+#| echo: false
+#| fig-cap: "A very simple classification with only one feature (Petal.Length). Decision boundaries are parameters and can be optimized for maximal accuracy."
+
+ggplot(iris, aes(x=Petal.Length, y=Species, color=Species)) + 
+  geom_point(size=3) +
+  annotate("rect",xmin=-Inf,xmax=2.5, ymin=0, ymax=Inf, alpha=0.2, fill="red") +
+  annotate("rect",xmin=2.5,xmax=5, ymin=0, ymax=Inf, alpha=0.2, fill="green") +
+  annotate("rect",xmin=5,xmax=Inf, ymin=0, ymax=Inf, alpha=0.2, fill="blue") +
+  theme(legend.position = "none")
+
+```
+- optimiere *decision boundaries* für maximal accuracy (minimal loss)
+- benutze mehr Variablen (oder PC componenten)
+- Achtung Overfitting: je mehr Variablen desto besser fit auf **Trainingdaten** $\to$ benutze separate **Testdaten**
+
+
+## Divide-Et-Impera: Train-Test 
+```{r}
+#| label: "split"
+#| echo: true
+set.seed(42)
+ind <- createDataPartition(iris$Species, p=0.80, list = FALSE) # stochastic without seed
+train <- iris[ind,]
+test <- iris[-ind,]
+```
+
+
+## K-Nearest Neighbours (1951)
+
+- benoetigt Distanzen (besser in PCA space)
+
+```{r}
+#| label: "knn_confusion"
+#| warning: false
+#| fig-cap: "Confusion Matrix for kNN classification"
+
+# model 
+model <- train(Species~., data=train, method="knn", metric="Accuracy") 
+pred <- predict(model, test)
+
+# evaluation: compare predictions with truth (in *test* data)
+cM <- confusionMatrix(pred, test$Species)
+
+# visualize confusion matrix
+plot_cM(cM)
+```
+
+
+## Neural Networks (1990)
+```{r}
+#| label: "nnet_caret"
+#| echo: false
+#| output: false
+#| fig-cap: "nnet training with caret"
+
+fit_nn <- train(Species~., data=train, method="nnet", metric="Accuracy", trace=FALSE)
+pred_nn <- predict(fit_nn, test)
+cM_nn <- confusionMatrix(pred_nn, test$Species)
+```
+
+```{r}
+#| label: "neuralnet"
+#| echo: false
+#| warning: false
+#| fig-cap: "nnet training (neuralnet)"
+
+library(neuralnet)
+
+model_nn <- neuralnet(
+  Species~ .,
+  data=train,
+  hidden=c(4,2),
+  linear.output = FALSE
+)
+```
+
+```{r}
+#| label: "knn_pred"
+#| echo: false
+#| fig-cap: "nnet prediction"
+
+pred_nn <- predict(model_nn, test) 
+pred_nn <- levels(test$Species)[max.col(pred_nn, "random")] %>% as.factor # extract column index with max probability
+cM <- confusionMatrix(pred_nn, test$Species)
+```
+
+
+
+
+
+
+## Quiz:
+
+
+## Summary
+
+
+
+## Erweiterungen

@@ -1,0 +1,23 @@
+---
+title: "Lecture Material"
+about:
+  template: jolla
+  links:
+    - icon: github
+      text: Github
+      href: https://github.com/thomasmanke/
+    - icon: envelope
+      text: Contact
+      href: mailto:thomasmanke1@gmail.com
+    - icon: https://colab.research.google.com/assets/colab-badge.svg
+      text: Collaboratory
+      href: https://colab.research.google.com/github/thomasmanke/ML2024/blob/main
+---
+
+The lecture material is freely available at github and a fully rendered version is available here: 
+
+![](notebooks/images/github_HTW.png)
+
+An interactive version for programmatic exploration can be accessed through Collaboratory:
+
+[![](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thomasmanke/HTW/blob/main/)

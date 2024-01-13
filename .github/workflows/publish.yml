@@ -1,0 +1,64 @@
+name: Quarto Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches: main
+
+defaults:
+  run:
+    shell: bash -l {0}
+    
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: env.yml
+          cache-environment: true
+          cache-downloads: true
+          environment-name: HTW
+          
+      - name: Activate Env
+        run: |
+          micromamba activate HTW
+        
+      - name: List quarto extensions
+        run: quarto list extensions
+          
+      - name: Render
+        run: quarto render
+        
+      - name: Upload
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+          
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,54 @@
+project:
+  type: website
+  output-dir: docs
+  
+website:
+  title: "HTW Berlin"
+  repo-url: https://github.com/thomasmanke/HTW
+  repo-actions: [issue]
+
+  navbar:
+    left: 
+      - text: "Notebooks"
+        icon: book
+        href: notebooks/index.qmd
+    right:
+      - icon: github
+        href: https://github.com/thomasmanke/HTW
+
+  page-footer: 
+    left: 
+      - text: Thomas Manke
+
+    right:
+      - icon: github
+        href: https://github.com/thomasmanke
+      - icon: linkedin
+        href: https://www.linkedin.com/in/thomasmanke/
+    background: "grey"
+    
+#  sidebar:
+#    - id: get-started
+#      title: "Get Started"
+#      style: "docked"
+#      search: true
+  
+format:
+  html:
+    theme: 
+      light: cosmo
+      dark: darkly
+    css: styles.css
+    code-link: false
+    code-fold: show
+#    code-tools: true
+    highlight-style: github
+
+resources:
+ - "notebooks/images/*"
+
+execute:
+  freeze: auto
+  
+editor: visual
+
