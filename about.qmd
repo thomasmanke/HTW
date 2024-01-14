@@ -16,7 +16,7 @@ about:
 
 The lecture material is freely available at github and a fully rendered version is available here: 
 
-![](notebooks/images/github_HTW.png)
+![](notebooks/images/gitpages_HTW.png)
 
 An interactive version for programmatic exploration can be accessed through Collaboratory:
 
