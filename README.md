@@ -10,7 +10,7 @@ cd HTW
 
 Create software environment (mamba)
 ```
-mamba create env -f env.yml
+mamba env create -f env.yml
 mamba activate ML20024
 ```
 
